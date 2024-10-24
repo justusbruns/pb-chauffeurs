@@ -2,11 +2,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Airtable from 'airtable';
 
-//const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
-//const BASE_ID = process.env.AIRTABLE_BASE_ID;
+const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
+const BASE_ID = process.env.AIRTABLE_BASE_ID;
 
-const AIRTABLE_TOKEN = 'patLctiFQeNRiWop6';
-const BASE_ID = 'apphYtwSYRt7UDukL';
 
 Airtable.configure({
     apiKey: AIRTABLE_TOKEN,
