@@ -9,29 +9,29 @@ const AIRTABLE_TOKEN = 'patLctiFQeNRiWop6';
 const BASE_ID = 'apphYtwSYRt7UDukL';
 
 Airtable.configure({
-  apiKey: AIRTABLE_TOKEN,
-});
-
-const base = Airtable.base(BASE_ID);
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  try {
-    let records;
-    if (req.method === 'GET') {
-      const { chauffeurId } = req.query;
-      records = await base('Availability').select({
-        filterByFormula: `{Chauffeurs}='${chauffeurId}'`,
-        fields: ['Availability', 'Chauffeurs', 'Event'],
-      }).all();
-    } else if (req.method === 'PATCH') {
+    apiKey: AIRTABLE_TOKEN,
+  });
+  
+  const base = Airtable.base(BASE_ID);
+  
+  export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+  
+    try {
+      let records;
+      if (req.method === 'GET') {
+        const { chauffeurId } = req.query;
+        records = await base('Availability').select({
+          filterByFormula: `{Chauffeurs}='${chauffeurId}'`,
+          fields: ['Availability', 'Chauffeurs', 'Event'],
+        }).all();
+      } else if (req.method === 'PATCH') {
         const { recordId, eventId, chauffeurId, status } = req.body;
         records = await base('Availability').update([
           {
@@ -44,15 +44,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
         ]);
       }
-
-    const formattedRecords = records.map(record => ({
-      id: record.id,
-      fields: record.fields,
-    }));
-
-    res.status(200).json(formattedRecords);
-  } catch (error) {
-    console.error('Error fetching availability from Airtable:', error);
-    res.status(500).json({ message: 'Error fetching data from Airtable' });
+  
+      if (!records) {
+        return res.status(404).json({ message: 'No records found' });
+      }
+  
+      const formattedRecords = records.map(record => ({
+        id: record.id,
+        fields: record.fields,
+      }));
+  
+      res.status(200).json(formattedRecords);
+    } catch (error) {
+      console.error('Error fetching availability from Airtable:', error);
+      res.status(500).json({ message: 'Error fetching data from Airtable' });
+    }
   }
-}
