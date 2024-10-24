@@ -1,8 +1,12 @@
+// pages/api/airtable/availability.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Airtable from 'airtable';
 
-const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
-const BASE_ID = process.env.AIRTABLE_BASE_ID;
+//const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
+//const BASE_ID = process.env.AIRTABLE_BASE_ID;
+
+const AIRTABLE_TOKEN = 'patLctiFQeNRiWop6';
+const BASE_ID = 'apphYtwSYRt7UDukL';
 
 Airtable.configure({
   apiKey: AIRTABLE_TOKEN,
@@ -19,37 +23,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).end();
   }
 
-  if (req.method === 'GET') {
-    const { chauffeurId } = req.query;
-    if (!chauffeurId) {
-      return res.status(400).json({ message: 'Missing chauffeurId' });
-    }
-
-    try {
-      const records = await base('Availability').select({
+  try {
+    let records;
+    if (req.method === 'GET') {
+      const { chauffeurId } = req.query;
+      records = await base('Availability').select({
         filterByFormula: `{Chauffeurs}='${chauffeurId}'`,
         fields: ['Availability', 'Chauffeurs', 'Event'],
       }).all();
-
-      const formattedRecords = records.map(record => ({
-        id: record.id,
-        fields: record.fields,
-      }));
-
-      res.status(200).json(formattedRecords);
-    } catch (error) {
-      console.error('Error fetching availability from Airtable:', error);
-      res.status(500).json({ message: 'Error fetching availability from Airtable' });
-    }
-  } else if (req.method === 'PATCH') {
-    const { eventId, chauffeurId, status } = req.body;
-
-    if (!eventId || !chauffeurId || !status) {
-      return res.status(400).json({ message: 'Missing required fields' });
-    }
-
-    try {
-      const records = await base('Availability').update([
+    } else if (req.method === 'PATCH') {
+      const { eventId, chauffeurId, status } = req.body;
+      records = await base('Availability').update([
         {
           fields: {
             Event: [eventId],
@@ -58,11 +42,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
         },
       ]);
-
-      res.status(200).json(records);
-    } catch (error) {
-      console.error('Error updating availability in Airtable:', error);
-      res.status(500).json({ message: 'Error updating availability in Airtable' });
     }
+
+    const formattedRecords = records.map(record => ({
+      id: record.id,
+      fields: record.fields,
+    }));
+
+    res.status(200).json(formattedRecords);
+  } catch (error) {
+    console.error('Error fetching availability from Airtable:', error);
+    res.status(500).json({ message: 'Error fetching data from Airtable' });
   }
 }
