@@ -13,7 +13,7 @@ Airtable.configure({
   apiKey: AIRTABLE_TOKEN,
 });
 
-const base = Airtable.base(BASE_ID);
+const base = Airtable.base(BASE_ID!);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -38,6 +38,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json(formattedRecords);
   } catch (error) {
     console.error('Error fetching chauffeurs from Airtable:', error);
-    res.status(500).json({ message: 'Error fetching data from Airtable', error: error.message });
+    res.status(500).json({ message: 'Error fetching data from Airtable', error: (error as Error).message });
   }
 }
