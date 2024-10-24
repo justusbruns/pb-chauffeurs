@@ -1,4 +1,6 @@
 // components/SignUpForm.tsx
+"use client";
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
@@ -35,35 +37,47 @@ const SignUpForm: React.FC = () => {
     }, []);
 
     const fetchEvents = async () => {
-        const response = await axios.get('/api/airtable/events');
-        const eventsData = response.data.map((record: any) => ({
-            id: record.id,
-            name: record.fields['Event name'],
-            start: record.fields['Starts at'],
-            stop: record.fields['Stops at'],
-            city: record.fields['Location City'],
-            travelTime: record.fields['Travel Time'],
-        }));
-        setEvents(eventsData);
+        try {
+            const response = await axios.get('/api/airtable/events');
+            const eventsData = response.data.map((record: any) => ({
+                id: record.id,
+                name: record.fields['Event name'],
+                start: record.fields['Starts at'],
+                stop: record.fields['Stops at'],
+                city: record.fields['Location City'],
+                travelTime: record.fields['Travel Time'],
+            }));
+            setEvents(eventsData);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        }
     };
 
     const fetchChauffeurs = async () => {
-        const response = await axios.get('/api/airtable/chauffeurs');
-        const chauffeursData = response.data.map((record: any) => ({
-            id: record.id,
-            name: record.fields['Name'],
-        }));
-        setChauffeurs(chauffeursData);
+        try {
+            const response = await axios.get('/api/airtable/chauffeurs');
+            const chauffeursData = response.data.map((record: any) => ({
+                id: record.id,
+                name: record.fields['Name'],
+            }));
+            setChauffeurs(chauffeursData);
+        } catch (error) {
+            console.error('Error fetching chauffeurs:', error);
+        }
     };
 
     const fetchAvailability = async (chauffeurId: string) => {
-        const response = await axios.get(`/api/airtable/availability?chauffeurId=${chauffeurId}`);
-        const availabilityData = response.data.map((record: any) => ({
-            eventId: record.fields['Event'][0],
-            chauffeurId: record.fields['Chauffeurs'][0],
-            status: record.fields['Availability'],
-        }));
-        setAvailability(availabilityData);
+        try {
+            const response = await axios.get(`/api/airtable/availability?chauffeurId=${chauffeurId}`);
+            const availabilityData = response.data.map((record: any) => ({
+                eventId: record.fields['Event'][0],
+                chauffeurId: record.fields['Chauffeurs'][0],
+                status: record.fields['Availability'],
+            }));
+            setAvailability(availabilityData);
+        } catch (error) {
+            console.error('Error fetching availability:', error);
+        }
     };
 
     const handleChauffeurChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -73,13 +87,17 @@ const SignUpForm: React.FC = () => {
     };
 
     const updateAvailability = async (eventId: string, status: string) => {
-        // Send availability update to Airtable
-        await axios.patch('/api/airtable/availability', {
-            eventId,
-            chauffeurId: selectedChauffeur,
-            status
-        });
-        fetchAvailability(selectedChauffeur); // Refresh data
+        try {
+            // Send availability update to Airtable
+            await axios.patch('/api/airtable/availability', {
+                eventId,
+                chauffeurId: selectedChauffeur,
+                status
+            });
+            fetchAvailability(selectedChauffeur); // Refresh data
+        } catch (error) {
+            console.error('Error updating availability:', error);
+        }
     };
 
     return (
