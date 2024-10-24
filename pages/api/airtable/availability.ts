@@ -10,7 +10,7 @@ Airtable.configure({
     apiKey: AIRTABLE_TOKEN,
   });
   
-  const base = Airtable.base(BASE_ID);
+  const base = Airtable.base(BASE_ID! || 'default_base_id');
   
   export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     res.setHeader('Access-Control-Allow-Origin', '*');
