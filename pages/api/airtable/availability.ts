@@ -68,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.status(200).json(formattedRecords);
   } catch (error) {
-    console.error('Error fetching availability from Airtable:', error);
-    res.status(500).json({ message: 'Error fetching data from Airtable', error: (error as Error).message });
+    console.error('Error handling request:', error);
+    res.status(500).json({ message: 'Error handling request', error: (error as Error).message });
   }
 }
