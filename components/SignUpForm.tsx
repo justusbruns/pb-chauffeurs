@@ -92,14 +92,29 @@ const SignUpForm: React.FC = () => {
 
     const updateAvailability = async (eventId: string, status: string) => {
         try {
-            await axios.patch('/api/airtable/availability', {
-                eventId,
-                chauffeurId: selectedChauffeur,
-                status
-            });
-            fetchAvailability(selectedChauffeur); // Refresh data
+            // Check if availability exists for this chauffeur and event
+            const existingRecord = availability.find(avail => avail.eventId === eventId && avail.chauffeurId === selectedChauffeur);
+    
+            if (existingRecord) {
+                // If availability exists, update it
+                await axios.patch('/api/airtable/availability', {
+                    eventId,
+                    chauffeurId: selectedChauffeur,
+                    status
+                });
+            } else {
+                // If availability does not exist, create a new record
+                await axios.post('/api/airtable/availability', {
+                    eventId,
+                    chauffeurId: selectedChauffeur,
+                    status
+                });
+            }
+    
+            // Refresh data after updating/creating availability
+            fetchAvailability(selectedChauffeur);
         } catch (error) {
-            console.error('Error updating availability:', error);
+            console.error('Error updating or creating availability:', error);
         }
     };
 
