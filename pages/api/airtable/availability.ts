@@ -32,17 +32,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         fields: ['Availability', 'Chauffeurs', 'Event'],
       }).all();
     } else if (req.method === 'PATCH') {
-      const { eventId, chauffeurId, status } = req.body;
-      records = await base('Availability').update([
-        {
-          fields: {
-            Event: [eventId],
-            Chauffeurs: [chauffeurId],
-            Availability: status,
+        const { recordId, eventId, chauffeurId, status } = req.body;
+        records = await base('Availability').update([
+          {
+            id: recordId, // Include the record ID here
+            fields: {
+              Event: [eventId],
+              Chauffeurs: [chauffeurId],
+              Availability: status,
+            },
           },
-        },
-      ]);
-    }
+        ]);
+      }
 
     const formattedRecords = records.map(record => ({
       id: record.id,
