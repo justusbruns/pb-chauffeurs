@@ -24,6 +24,11 @@ interface Availability {
     status: string; // "Available", "Not Available", "Maybe Available"
 }
 
+interface AirtableRecord<T> {
+    id: string;
+    fields: T;
+}
+
 const SignUpForm: React.FC = () => {
     const [events, setEvents] = useState<Event[]>([]);
     const [chauffeurs, setChauffeurs] = useState<Chauffeur[]>([]);
@@ -39,7 +44,7 @@ const SignUpForm: React.FC = () => {
     const fetchEvents = async () => {
         try {
             const response = await axios.get('/api/airtable/events');
-            const eventsData = response.data.map((record: any) => ({
+            const eventsData = response.data.map((record: AirtableRecord<{ 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string }>) => ({
                 id: record.id,
                 name: record.fields['Event name'],
                 start: record.fields['Starts at'],
@@ -56,7 +61,7 @@ const SignUpForm: React.FC = () => {
     const fetchChauffeurs = async () => {
         try {
             const response = await axios.get('/api/airtable/chauffeurs');
-            const chauffeursData = response.data.map((record: any) => ({
+            const chauffeursData = response.data.map((record: AirtableRecord<{ Name: string }>) => ({
                 id: record.id,
                 name: record.fields['Name'],
             }));
@@ -69,7 +74,7 @@ const SignUpForm: React.FC = () => {
     const fetchAvailability = async (chauffeurId: string) => {
         try {
             const response = await axios.get(`/api/airtable/availability?chauffeurId=${chauffeurId}`);
-            const availabilityData = response.data.map((record: any) => ({
+            const availabilityData = response.data.map((record: AirtableRecord<{ Event: string[]; Chauffeurs: string[]; Availability: string }>) => ({
                 eventId: record.fields['Event'][0],
                 chauffeurId: record.fields['Chauffeurs'][0],
                 status: record.fields['Availability'],
