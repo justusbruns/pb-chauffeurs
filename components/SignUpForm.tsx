@@ -36,10 +36,15 @@ const SignUpForm: React.FC = () => {
     const [selectedChauffeur, setSelectedChauffeur] = useState<string>('');
 
     useEffect(() => {
-        // Fetch events, chauffeurs, and availability from Airtable
         fetchEvents();
         fetchChauffeurs();
     }, []);
+
+    useEffect(() => {
+        if (selectedChauffeur) {
+            fetchAvailability(selectedChauffeur);
+        }
+    }, [selectedChauffeur]);
 
     const fetchEvents = async () => {
         try {
@@ -85,15 +90,8 @@ const SignUpForm: React.FC = () => {
         }
     };
 
-    const handleChauffeurChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedId = event.target.value;
-        setSelectedChauffeur(selectedId);
-        fetchAvailability(selectedId);
-    };
-
     const updateAvailability = async (eventId: string, status: string) => {
         try {
-            // Send availability update to Airtable
             await axios.patch('/api/airtable/availability', {
                 eventId,
                 chauffeurId: selectedChauffeur,
@@ -108,7 +106,8 @@ const SignUpForm: React.FC = () => {
     return (
         <div>
             <label htmlFor="chauffeur-select">Chauffeur Name:</label>
-            <select id="chauffeur-select" value={selectedChauffeur} onChange={handleChauffeurChange}>
+            <select id="chauffeur-select" value={selectedChauffeur} onChange={(e) => setSelectedChauffeur(e.target.value)}>
+                <option value="">Select a Chauffeur</option>
                 {chauffeurs.map((chauffeur) => (
                     <option key={chauffeur.id} value={chauffeur.id}>
                         {chauffeur.name}
