@@ -13,11 +13,11 @@ Airtable.configure({
   apiKey: AIRTABLE_TOKEN,
 });
 
-const base = Airtable.base(BASE_ID! || 'default_base_id');
+const base = Airtable.base(BASE_ID!);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PATCH, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
@@ -37,6 +37,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       records = await base('Availability').update([
         {
           id: recordId, // Include the record ID here
+          fields: {
+            Event: [eventId],
+            Chauffeurs: [chauffeurId],
+            Availability: status,
+          },
+        },
+      ]);
+    } else if (req.method === 'POST') {
+      const { eventId, chauffeurId, status } = req.body;
+      records = await base('Availability').create([
+        {
           fields: {
             Event: [eventId],
             Chauffeurs: [chauffeurId],
