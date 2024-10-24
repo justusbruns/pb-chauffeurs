@@ -153,9 +153,10 @@ const SignUpForm: React.FC = () => {
                         <p>City: {event.city}</p>
                         <p>Travel Time: {event.travelTime}</p>
                         <select
-                            value={availabilityForEvent?.status || 'Unavailable'}
+                            value={availabilityForEvent?.status || 'Select your availability'}
                             onChange={(e) => updateAvailability(event.id, e.target.value)}
                         >
+                            <option value="Select your availability">Select your availability</option>
                             <option value="Available">✅ Available</option>
                             <option value="Not Available">🚫 Not Available</option>
                             <option value="Maybe Available">💅 Maybe Available</option>
