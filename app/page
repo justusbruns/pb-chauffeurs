@@ -1,4 +1,4 @@
-// pages/index.tsx
+// app/page.tsx
 import React from 'react';
 import SignUpForm from '../components/SignUpForm';
 
@@ -11,4 +11,4 @@ const Home: React.FC = () => {
     );
 };
 
-export default Home;git push origin main
+export default Home;
