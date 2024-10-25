@@ -1,4 +1,5 @@
 // pages/api/airtable/events.ts
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Airtable from 'airtable';
 
@@ -15,6 +16,11 @@ Airtable.configure({
 
 const base = Airtable.base(BASE_ID!);
 
+function formatTravelTime(travelTime: string): string {
+  const [hours, minutes] = travelTime.split(':').map(Number);
+  return `${hours}h ${minutes.toString().padStart(2, '0')}m`;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -26,13 +32,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const records = await base('Events').select({
-      view: 'viwrQmtgDMoynYnfv', // Add the view parameter for "Chauffeurs" view
       fields: ['Event name', 'Starts at', 'Stops at', 'Location City', 'Travel Time'],
     }).all();
 
     const formattedRecords = records.map(record => ({
       id: record.id,
-      fields: record.fields,
+      fields: {
+        ...record.fields,
+        'Travel Time': record.fields['Travel Time'] 
+          ? formatTravelTime(record.fields['Travel Time'] as string)
+          : 'N/A',
+      },
     }));
 
     res.status(200).json(formattedRecords);
