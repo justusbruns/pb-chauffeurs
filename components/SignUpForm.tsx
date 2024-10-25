@@ -151,37 +151,39 @@ const SignUpForm: React.FC = () => {
                 ))}
             </select>
 
-            <div className="events-container">
-                {events.map((event) => {
-                    const availabilityForEvent = availability.find(
-                        avail => avail.eventId === event.id && avail.chauffeurId === selectedChauffeur
-                    );
+            {selectedChauffeur && (
+                <div className="events-container">
+                    {events.map((event) => {
+                        const availabilityForEvent = availability.find(
+                            avail => avail.eventId === event.id && avail.chauffeurId === selectedChauffeur
+                        );
         
-                    console.log("Matching availability for event:", availabilityForEvent);  // Add this line
+                        console.log("Matching availability for event:", availabilityForEvent);  // Add this line
 
-                    return (
-                        <div key={event.id} className="event-item">
-                            <h3 className="event-name">{event.name}</h3>
-                            <p className="event-details">Starts at: {format(new Date(event.start), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
-                            <p className="event-details">Stops at: {format(new Date(event.stop), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
-                            <p className="event-details">City: {event.city}</p>
-                            {event.travelTime && <p className="event-details">Travel Time: {formatTravelTime(event.travelTime)}</p>}
-                            <div className="availability-dropdown">
-                                <select
-                                    value={availabilityForEvent?.status || 'Select Availability'}
-                                    onChange={(e) => updateAvailability(event.id, e.target.value)}
-                                >
-                                    <option value="Select Availability">Select Availability</option>
-                                    <option value="Available">✅ Available</option>
-                                    <option value="Not Available">🚫 Not Available</option>
-                                    <option value="Maybe Available">💅 Maybe Available</option>
-                                </select>
+                        return (
+                            <div key={event.id} className="event-item">
+                                <h3 className="event-name">{event.name}</h3>
+                                <p className="event-details">Starts at: {format(new Date(event.start), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
+                                <p className="event-details">Stops at: {format(new Date(event.stop), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
+                                <p className="event-details">City: {event.city}</p>
+                                {event.travelTime && <p className="event-details">Travel Time: {formatTravelTime(event.travelTime)}</p>}
+                                <div className="availability-dropdown">
+                                    <select
+                                        value={availabilityForEvent?.status || 'Select Availability'}
+                                        onChange={(e) => updateAvailability(event.id, e.target.value)}
+                                    >
+                                        <option value="Select Availability">Select Availability</option>
+                                        <option value="Available">✅ Available</option>
+                                        <option value="Not Available">🚫 Not Available</option>
+                                        <option value="Maybe Available">💅 Maybe Available</option>
+                                    </select>
+                                </div>
+                                <hr className="event-separator" />
                             </div>
-                            <hr className="event-separator" />
-                        </div>
-                    );
-                })}
-            </div>
+                        );
+                    })}
+                </div>
+            )}
 
             <style jsx>{`
                 .sign-up-form {
