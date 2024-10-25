@@ -114,15 +114,28 @@ const SignUpForm: React.FC = () => {
                     chauffeurId: selectedChauffeur,
                     status
                 });
+                // Update the local state
+                setAvailability(prevAvailability =>
+                    prevAvailability.map(avail =>
+                        avail.id === existingRecord.id ? { ...avail, status } : avail
+                    )
+                );
             } else {
                 // Create a new record in the Availability table
-                await axios.post('/api/airtable/availability', {
+                const response = await axios.post('/api/airtable/availability', {
                     eventId,
                     chauffeurId: selectedChauffeur,
                     status
                 });
+                const newRecord = response.data[0];
+                // Update the local state
+                setAvailability(prevAvailability => [...prevAvailability, {
+                    id: newRecord.id,
+                    eventId,
+                    chauffeurId: selectedChauffeur,
+                    status
+                }]);
             }
-            fetchAvailability(selectedChauffeur); // Refresh data after update
         } catch (error) {
             console.error('Error updating availability:', error);
             setErrorMessage('Failed to update availability');
