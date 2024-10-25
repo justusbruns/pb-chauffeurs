@@ -129,11 +129,11 @@ const SignUpForm: React.FC = () => {
     };
 
     return (
-        <div>
+        <div className="sign-up-form">
             {errorMessage && <p className="error">{errorMessage}</p>}
 
-            <label htmlFor="chauffeur-select">Chauffeur Name:</label>
-            <select id="chauffeur-select" value={selectedChauffeur} onChange={(e) => setSelectedChauffeur(e.target.value)}>
+            <label htmlFor="chauffeur-select" className="chauffeur-label">Chauffeur Name:</label>
+            <select id="chauffeur-select" className="chauffeur-dropdown" value={selectedChauffeur} onChange={(e) => setSelectedChauffeur(e.target.value)}>
                 <option value="">Select a Chauffeur</option>
                 {chauffeurs.map((chauffeur) => (
                     <option key={chauffeur.id} value={chauffeur.id}>
@@ -142,28 +142,70 @@ const SignUpForm: React.FC = () => {
                 ))}
             </select>
 
-            {events.map((event) => {
-                const availabilityForEvent = availability.find(avail => avail.eventId === event.id);
+            <div className="events-container">
+                {events.map((event) => {
+                    const availabilityForEvent = availability.find(avail => avail.eventId === event.id);
 
-                return (
-                    <div key={event.id} className="event">
-                        <h3>{event.name}</h3>
-                        <p>Starts at: {event.start}</p>
-                        <p>Stops at: {event.stop}</p>
-                        <p>City: {event.city}</p>
-                        <p>Travel Time: {event.travelTime}</p>
-                        <select
-                            value={availabilityForEvent?.status || 'Select your availability'}
-                            onChange={(e) => updateAvailability(event.id, e.target.value)}
-                        >
-                            <option value="Select your availability">Select your availability</option>
-                            <option value="Available">✅ Available</option>
-                            <option value="Not Available">🚫 Not Available</option>
-                            <option value="Maybe Available">💅 Maybe Available</option>
-                        </select>
-                    </div>
-                );
-            })}
+                    return (
+                        <div key={event.id} className="event-item">
+                            <h3 className="event-name">{event.name}</h3>
+                            <p className="event-details">Starts at: {event.start}</p>
+                            <p className="event-details">Stops at: {event.stop}</p>
+                            <p className="event-details">City: {event.city}</p>
+                            <p className="event-details">Travel Time: {event.travelTime}</p>
+                            <div className="availability-dropdown">
+                                <select
+                                    value={availabilityForEvent?.status || 'Select Availability'}
+                                    onChange={(e) => updateAvailability(event.id, e.target.value)}
+                                >
+                                    <option value="Select Availability">Select Availability</option>
+                                    <option value="Available">✅ Available</option>
+                                    <option value="Not Available">🚫 Not Available</option>
+                                    <option value="Maybe Available">💅 Maybe Available</option>
+                                </select>
+                            </div>
+                            <hr className="event-separator" />
+                        </div>
+                    );
+                })}
+            </div>
+
+            <style jsx>{`
+                .sign-up-form {
+                    font-family: Arial, sans-serif;
+                    margin: 20px;
+                }
+                .chauffeur-label {
+                    font-weight: bold;
+                    margin-bottom: 10px;
+                }
+                .chauffeur-dropdown {
+                    margin-bottom: 20px;
+                    padding: 5px;
+                    width: 100%;
+                    font-size: 16px;
+                }
+                .events-container {
+                    margin-top: 20px;
+                }
+                .event-item {
+                    padding: 10px 0;
+                }
+                .event-name {
+                    font-size: 18px;
+                    font-weight: bold;
+                }
+                .event-details {
+                    margin: 5px 0;
+                }
+                .availability-dropdown {
+                    margin-top: 10px;
+                }
+                .event-separator {
+                    border: 1px solid #ccc;
+                    margin-top: 20px;
+                }
+            `}</style>
         </div>
     );
 };
