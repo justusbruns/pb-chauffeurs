@@ -200,7 +200,6 @@ const SignUpForm: React.FC = () => {
                 })}
             </div>
 
-
             <style jsx>{`
                 .sign-up-form {
                     font-family: Arial, sans-serif;
