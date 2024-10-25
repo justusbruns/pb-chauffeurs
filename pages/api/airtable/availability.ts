@@ -27,26 +27,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let records;
 
     if (req.method === 'GET') {
-        const { chauffeurId } = req.query;
-        records = await base('Availability').select({
-            filterByFormula: `{Chauffeurs}='${chauffeurId}'`,
-            fields: ['Availability', 'Chauffeurs', 'Event'],
-        }).all();
-    
-        console.log("Raw Airtable records:", records);
-    
-        const formattedRecords = records.map(record => ({
-            id: record.id,
-            eventId: Array.isArray(record.fields['Event']) ? record.fields['Event'][0] : null,
-            chauffeurId: Array.isArray(record.fields['Chauffeurs']) ? record.fields['Chauffeurs'][0] : null,
-            status: record.fields['Availability'] || 'Unavailable',
-        }));
-    
-        console.log("Formatted availability records being sent to frontend:", formattedRecords);
-        return res.status(200).json(formattedRecords);
-    }
+      const { chauffeurId } = req.query;
+      records = await base('Availability').select({
+        filterByFormula: `{Chauffeurs}='${chauffeurId}'`,
+        fields: ['Availability', 'Chauffeurs', 'Event'],
+      }).all();
 
-      // Check if Event and Chauffeurs fields are arrays and extract the first element
+      console.log("Raw Airtable records:", records);
+
       const formattedRecords = records.map(record => ({
         id: record.id,
         eventId: Array.isArray(record.fields['Event']) ? record.fields['Event'][0] : null,
@@ -54,11 +42,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         status: record.fields['Availability'] || 'Unavailable',
       }));
 
+      console.log("Formatted availability records being sent to frontend:", formattedRecords);
       return res.status(200).json(formattedRecords);
-    
+
     } else if (req.method === 'PATCH') {
       const { recordId, eventId, chauffeurId, status } = req.body;
-      console.log('PATCH Request body:', req.body);  // Log the request body
+      console.log('PATCH Request body:', req.body);
 
       records = await base('Availability').update([
         {
@@ -71,12 +60,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       ]);
 
-      console.log('PATCH Airtable response:', records);  // Log the Airtable response
+      console.log('PATCH Airtable response:', records);
       return res.status(200).json(records);
-    
+
     } else if (req.method === 'POST') {
       const { eventId, chauffeurId, status } = req.body;
-      console.log('POST Request body:', req.body);  // Log the request body
+      console.log('POST Request body:', req.body);
 
       records = await base('Availability').create([
         {
@@ -88,7 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       ]);
 
-      console.log('POST Airtable response:', records);  // Log the Airtable response
+      console.log('POST Airtable response:', records);
       return res.status(200).json(records);
     }
   } catch (error) {
