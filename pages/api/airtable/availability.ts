@@ -27,12 +27,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let records;
 
     if (req.method === 'GET') {
-      const { chauffeurId } = req.query;
-
-      records = await base('Availability').select({
-        filterByFormula: `{Chauffeurs}='${chauffeurId}'`,
-        fields: ['Availability', 'Chauffeurs', 'Event'],
-      }).all();
+        const { chauffeurId } = req.query;
+        records = await base('Availability').select({
+            filterByFormula: `{Chauffeurs}='${chauffeurId}'`,
+            fields: ['Availability', 'Chauffeurs', 'Event'],
+        }).all();
+    
+        console.log("Raw Airtable records:", records);
+    
+        const formattedRecords = records.map(record => ({
+            id: record.id,
+            eventId: Array.isArray(record.fields['Event']) ? record.fields['Event'][0] : null,
+            chauffeurId: Array.isArray(record.fields['Chauffeurs']) ? record.fields['Chauffeurs'][0] : null,
+            status: record.fields['Availability'] || 'Unavailable',
+        }));
+    
+        console.log("Formatted availability records being sent to frontend:", formattedRecords);
+        return res.status(200).json(formattedRecords);
+    }
 
       // Check if Event and Chauffeurs fields are arrays and extract the first element
       const formattedRecords = records.map(record => ({

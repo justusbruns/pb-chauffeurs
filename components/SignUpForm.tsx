@@ -86,15 +86,13 @@ const SignUpForm: React.FC = () => {
     const fetchAvailability = async (chauffeurId: string) => {
         try {
             const response = await axios.get(`/api/airtable/availability?chauffeurId=${chauffeurId}`);
+            console.log("API response data:", response.data);  // Add this line
             const availabilityData = response.data.map((record: AirtableRecord<{ Event: string[]; Chauffeurs: string[]; Availability: string }>) => ({
-                id: record.id,  // Capture the Airtable record ID for the availability record
-                eventId: record.fields['Event'][0],  // Event ID (linked record)
-                chauffeurId: record.fields['Chauffeurs'][0],  // Chauffeur ID (linked record)
-                status: record.fields['Availability'],  // Availability status
+                id: record.id,
+                eventId: record.fields['Event'][0],
+                chauffeurId: record.fields['Chauffeurs'][0],
+                status: record.fields['Availability'],
             }));
-
-            console.log("Fetched availability data:", availabilityData); // Debugging log
-
             setAvailability(availabilityData);
         } catch (error) {
             console.error('Error fetching availability:', error);
@@ -172,11 +170,11 @@ const SignUpForm: React.FC = () => {
 
             <div className="events-container">
                 {events.map((event) => {
-                    // Match the event and chauffeur with its availability status
-                    const availabilityForEvent = availability.find(avail => avail.eventId === event.id && avail.chauffeurId === selectedChauffeur);
-
-                    console.log("Event ID:", event.id); // Debugging log
-                    console.log("Matched availability:", availabilityForEvent); // Debugging log
+                    const availabilityForEvent = availability.find(
+                        avail => avail.eventId === event.id && avail.chauffeurId === selectedChauffeur
+                    );
+        
+                    console.log("Matching availability for event:", availabilityForEvent);  // Add this line
 
                     return (
                         <div key={event.id} className="event-item">
