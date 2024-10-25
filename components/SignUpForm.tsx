@@ -29,6 +29,7 @@ const SignUpForm: React.FC = () => {
     const [events, setEvents] = useState<Event[]>([]);
     const [chauffeurs, setChauffeurs] = useState<Chauffeur[]>([]);
     const [availability, setAvailability] = useState<Availability[]>([]);
+    const [filteredAvailability, setFilteredAvailability] = useState<Availability[]>([]);
     const [selectedChauffeur, setSelectedChauffeur] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -40,9 +41,9 @@ const SignUpForm: React.FC = () => {
 
     useEffect(() => {
         if (selectedChauffeur) {
-            fetchAllAvailability(); // Fetch all availability records again when a chauffeur is selected
+            filterAvailability(selectedChauffeur); // Filter availability records when a chauffeur is selected
         }
-    }, [selectedChauffeur]);
+    }, [selectedChauffeur, availability]);
 
     // Fetch the list of chauffeurs
     const fetchChauffeurs = async () => {
@@ -93,6 +94,12 @@ const SignUpForm: React.FC = () => {
             console.error('Error fetching availability:', error);
             setErrorMessage('Failed to fetch availability');
         }
+    };
+
+    // Filter availability records for the selected chauffeur
+    const filterAvailability = (chauffeurId: string) => {
+        const filtered = availability.filter(avail => avail.chauffeurId === chauffeurId);
+        setFilteredAvailability(filtered);
     };
 
     // Update or create availability for a given event and chauffeur
@@ -147,8 +154,8 @@ const SignUpForm: React.FC = () => {
             {selectedChauffeur && (
                 <div className="events-container">
                     {events.map((event) => {
-                        const availabilityForEvent = availability.find(
-                            avail => avail.eventId === event.id && avail.chauffeurId === selectedChauffeur
+                        const availabilityForEvent = filteredAvailability.find(
+                            avail => avail.eventId === event.id
                         );
             
                         console.log("Matching availability for event:", availabilityForEvent);  // Add this line
