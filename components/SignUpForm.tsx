@@ -33,15 +33,17 @@ const SignUpForm: React.FC = () => {
     const [selectedChauffeur, setSelectedChauffeur] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+    // Fetch all data when the component mounts
     useEffect(() => {
         fetchChauffeurs();
-        fetchEvents(); // Fetch all events initially
-        fetchAllAvailability(); // Fetch all availability records initially
+        fetchEvents();
+        fetchAllAvailability();
     }, []);
 
+    // Re-filter the availability records whenever the chauffeur is selected or data changes
     useEffect(() => {
         if (selectedChauffeur) {
-            filterAvailability(selectedChauffeur); // Filter availability records when a chauffeur is selected
+            filterAvailability(selectedChauffeur); 
         }
     }, [selectedChauffeur, availability]);
 
@@ -89,7 +91,7 @@ const SignUpForm: React.FC = () => {
                 chauffeurId: record.fields['Chauffeurs'][0],
                 status: record.fields['Availability'],
             }));
-            setAvailability(availabilityData);
+            setAvailability(availabilityData); // Store all availability data
         } catch (error) {
             console.error('Error fetching availability:', error);
             setErrorMessage('Failed to fetch availability');
@@ -99,7 +101,7 @@ const SignUpForm: React.FC = () => {
     // Filter availability records for the selected chauffeur
     const filterAvailability = (chauffeurId: string) => {
         const filtered = availability.filter(avail => avail.chauffeurId === chauffeurId);
-        setFilteredAvailability(filtered);
+        setFilteredAvailability(filtered); // Store filtered availability
     };
 
     // Update or create availability for a given event and chauffeur
@@ -142,7 +144,12 @@ const SignUpForm: React.FC = () => {
             {errorMessage && <p className="error">{errorMessage}</p>}
 
             <label htmlFor="chauffeur-select" className="chauffeur-label">Chauffeur Name:</label>
-            <select id="chauffeur-select" className="chauffeur-dropdown" value={selectedChauffeur} onChange={(e) => setSelectedChauffeur(e.target.value)}>
+            <select
+                id="chauffeur-select"
+                className="chauffeur-dropdown"
+                value={selectedChauffeur}
+                onChange={(e) => setSelectedChauffeur(e.target.value)}
+            >
                 <option value="">Select a Chauffeur</option>
                 {chauffeurs.map((chauffeur) => (
                     <option key={chauffeur.id} value={chauffeur.id}>
@@ -157,9 +164,6 @@ const SignUpForm: React.FC = () => {
                         const availabilityForEvent = filteredAvailability.find(
                             avail => avail.eventId === event.id
                         );
-            
-                        console.log("Matching availability for event:", availabilityForEvent);  // Add this line
-
                         return (
                             <div key={event.id} className="event-item">
                                 <h3 className="event-name">{event.name}</h3>
