@@ -60,24 +60,24 @@ const SignUpForm: React.FC = () => {
         }
     };
 
-    // Fetch the list of events
-    const fetchEvents = async () => {
-        try {
-            const response = await axios.get('/api/airtable/events');
-            const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string } }) => ({
-                id: record.id,
-                name: record.fields['Event name'],
-                start: record.fields['Starts at'],
-                stop: record.fields['Stops at'],
-                city: record.fields['Location City'],
-                travelTime: record.fields['Travel Time'],
-            }));
-            setEvents(eventsData);
-        } catch (error) {
-            console.error('Error fetching events:', error);
-            setErrorMessage('Failed to fetch events');
-        }
-    };
+        // Fetch the list of events
+            const fetchEvents = async () => {
+                try {
+                    const response = await axios.get('/api/airtable/events');
+                    const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time'?: string } }) => ({
+                        id: record.id,
+                        name: record.fields['Event name'],
+                        start: record.fields['Starts at'],
+                        stop: record.fields['Stops at'],
+                        city: record.fields['Location City'],
+                        travelTime: record.fields['Travel Time'] || 'N/A', // Add a fallback
+                    }));
+                    setEvents(eventsData);
+                } catch (error) {
+                    console.error('Error fetching events:', error);
+                    setErrorMessage('Failed to fetch events');
+                }
+            };
 
     // Fetch all availability records
     const fetchAllAvailability = async () => {
