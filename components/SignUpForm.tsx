@@ -95,6 +95,9 @@ const SignUpForm: React.FC = () => {
                 chauffeurId: record.fields['Chauffeurs'][0],
                 status: record.fields['Availability'],
             }));
+
+            console.log("Fetched availability data:", availabilityData); // Debugging log
+
             setAvailability(availabilityData);
         } catch (error) {
             console.error('Error fetching availability:', error);
@@ -173,6 +176,8 @@ const SignUpForm: React.FC = () => {
             <div className="events-container">
                 {events.map((event) => {
                     const availabilityForEvent = availability.find(avail => avail.eventId === event.id);
+                    console.log("Event ID:", event.id); // Debugging log
+                    console.log("Availability for event:", availabilityForEvent); // Debugging log
 
                     return (
                         <div key={event.id} className="event-item">

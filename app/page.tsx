@@ -5,7 +5,6 @@ import SignUpForm from '../components/SignUpForm';
 const Home: React.FC = () => {
     return (
         <div>
-            <h1>Chauffeurs Sign Up</h1>
             <SignUpForm />
         </div>
     );
