@@ -35,11 +35,12 @@ const SignUpForm: React.FC = () => {
     useEffect(() => {
         fetchChauffeurs();
         fetchEvents(); // Fetch all events initially
+        fetchAllAvailability(); // Fetch all availability records initially
     }, []);
 
     useEffect(() => {
         if (selectedChauffeur) {
-            fetchAvailability(selectedChauffeur);
+            fetchAllAvailability(); // Fetch all availability records again when a chauffeur is selected
         }
     }, [selectedChauffeur]);
 
@@ -77,11 +78,10 @@ const SignUpForm: React.FC = () => {
         }
     };
 
-    // Fetch the availability for the selected chauffeur
-    const fetchAvailability = async (chauffeurId: string) => {
+    // Fetch all availability records
+    const fetchAllAvailability = async () => {
         try {
-            const response = await axios.get(`/api/airtable/availability?chauffeurId=${chauffeurId}`);
-            console.log("API response data:", response.data);  // Add this line
+            const response = await axios.get('/api/airtable/availability');
             const availabilityData = response.data.map((record: { id: string; fields: { Event: string[]; Chauffeurs: string[]; Availability: string } }) => ({
                 id: record.id,
                 eventId: record.fields['Event'][0],
@@ -144,37 +144,39 @@ const SignUpForm: React.FC = () => {
                 ))}
             </select>
 
-            <div className="events-container">
-                {events.map((event) => {
-                    const availabilityForEvent = availability.find(
-                        avail => avail.eventId === event.id && avail.chauffeurId === selectedChauffeur
-                    );
-        
-                    console.log("Matching availability for event:", availabilityForEvent);  // Add this line
+            {selectedChauffeur && (
+                <div className="events-container">
+                    {events.map((event) => {
+                        const availabilityForEvent = availability.find(
+                            avail => avail.eventId === event.id && avail.chauffeurId === selectedChauffeur
+                        );
+            
+                        console.log("Matching availability for event:", availabilityForEvent);  // Add this line
 
-                    return (
-                        <div key={event.id} className="event-item">
-                            <h3 className="event-name">{event.name}</h3>
-                            <p className="event-details">Starts at: {format(new Date(event.start), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
-                            <p className="event-details">Stops at: {format(new Date(event.stop), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
-                            <p className="event-details">City: {event.city}</p>
-                            {event.travelTime && <p className="event-details">Travel Time: {formatTravelTime(event.travelTime)}</p>}
-                            <div className="availability-dropdown">
-                                <select
-                                    value={availabilityForEvent?.status || 'Select Availability'}
-                                    onChange={(e) => updateAvailability(event.id, e.target.value)}
-                                >
-                                    <option value="Select Availability">Select Availability</option>
-                                    <option value="Available">✅ Available</option>
-                                    <option value="Not Available">🚫 Not Available</option>
-                                    <option value="Maybe Available">💅 Maybe Available</option>
-                                </select>
+                        return (
+                            <div key={event.id} className="event-item">
+                                <h3 className="event-name">{event.name}</h3>
+                                <p className="event-details">Starts at: {format(new Date(event.start), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
+                                <p className="event-details">Stops at: {format(new Date(event.stop), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
+                                <p className="event-details">City: {event.city}</p>
+                                {event.travelTime && <p className="event-details">Travel Time: {formatTravelTime(event.travelTime)}</p>}
+                                <div className="availability-dropdown">
+                                    <select
+                                        value={availabilityForEvent?.status || 'Select Availability'}
+                                        onChange={(e) => updateAvailability(event.id, e.target.value)}
+                                    >
+                                        <option value="Select Availability">Select Availability</option>
+                                        <option value="Available">✅ Available</option>
+                                        <option value="Not Available">🚫 Not Available</option>
+                                        <option value="Maybe Available">💅 Maybe Available</option>
+                                    </select>
+                                </div>
+                                <hr className="event-separator" />
                             </div>
-                            <hr className="event-separator" />
-                        </div>
-                    );
-                })}
-            </div>
+                        );
+                    })}
+                </div>
+            )}
 
             <style jsx>{`
                 .sign-up-form {
