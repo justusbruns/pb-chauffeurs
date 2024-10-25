@@ -34,43 +34,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }).all();
     } else if (req.method === 'PATCH') {
       const { recordId, eventId, chauffeurId, status } = req.body;
-      try {
-        console.log('PATCH Request body:', req.body);  // Log the request body
-        records = await base('Availability').update([
-          {
-            id: recordId, // Include the record ID here
-            fields: {
-              Event: [eventId],
-              Chauffeurs: [chauffeurId],
-              Availability: status,
-            },
+      records = await base('Availability').update([
+        {
+          id: recordId, // Include the record ID here
+          fields: {
+            Event: [eventId],
+            Chauffeurs: [chauffeurId],
+            Availability: status,
           },
-        ]);
-        console.log('PATCH Airtable response:', records);  // Log the Airtable response
-        res.status(200).json(records);
-      } catch (error) {
-        console.error('Error updating availability in Airtable:', error);  // Log the error
-        res.status(500).json({ message: 'Airtable update error', error: (error as Error).message });
-      }
+        },
+      ]);
     } else if (req.method === 'POST') {
       const { eventId, chauffeurId, status } = req.body;
-      try {
-        console.log('POST Request body:', req.body);  // Log the request body
-        records = await base('Availability').create([
-          {
-            fields: {
-              Event: [eventId],
-              Chauffeurs: [chauffeurId],
-              Availability: status,
-            },
+      records = await base('Availability').create([
+        {
+          fields: {
+            Event: [eventId],
+            Chauffeurs: [chauffeurId],
+            Availability: status,
           },
-        ]);
-        console.log('POST Airtable response:', records);  // Log the Airtable response
-        res.status(200).json(records);
-      } catch (error) {
-        console.error('Error creating availability in Airtable:', error);  // Log the error
-        res.status(500).json({ message: 'Airtable create error', error: (error as Error).message });
-      }
+        },
+      ]);
     }
 
     if (!records) {
