@@ -60,34 +60,34 @@ const SignUpForm: React.FC = () => {
         }
     };
 
-        // Fetch the list of events
-            const fetchEvents = async () => {
-                try {
-                    const response = await axios.get('/api/airtable/events');
-                    const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time'?: string } }) => ({
-                        id: record.id,
-                        name: record.fields['Event name'],
-                        start: record.fields['Starts at'],
-                        stop: record.fields['Stops at'],
-                        city: record.fields['Location City'],
-                        travelTime: record.fields['Travel Time'] || 'N/A', // Add a fallback
-                    }));
-                    setEvents(eventsData);
-                } catch (error) {
-                    console.error('Error fetching events:', error);
-                    setErrorMessage('Failed to fetch events');
-                }
-            };
+    // Fetch the list of events
+    const fetchEvents = async () => {
+        try {
+            const response = await axios.get('/api/airtable/events');
+            const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string } }) => ({
+                id: record.id,
+                name: record.fields['Event name'],
+                start: record.fields['Starts at'],
+                stop: record.fields['Stops at'],
+                city: record.fields['Location City'],
+                travelTime: record.fields['Travel Time'],
+            }));
+            setEvents(eventsData);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+            setErrorMessage('Failed to fetch events');
+        }
+    };
 
     // Fetch all availability records
     const fetchAllAvailability = async () => {
         try {
             const response = await axios.get('/api/airtable/availability');
-            const availabilityData = response.data.map((record: { id: string; fields: { Event: string[]; Chauffeurs: string[]; Availability: string } }) => ({
+            const availabilityData = response.data.map((record: { id: string; eventId: string; chauffeurId: string; status: string }) => ({
                 id: record.id,
-                eventId: record.fields['Event'][0],
-                chauffeurId: record.fields['Chauffeurs'][0],
-                status: record.fields['Availability'],
+                eventId: record.eventId,
+                chauffeurId: record.chauffeurId,
+                status: record.status,
             }));
             setAvailability(availabilityData);
         } catch (error) {
