@@ -1,4 +1,3 @@
-// pages/api/airtable/availability.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Airtable from 'airtable';
 
@@ -32,64 +31,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         filterByFormula: `{Chauffeurs}='${chauffeurId}'`,
         fields: ['Availability', 'Chauffeurs', 'Event'],
       }).all();
-    } else if (req.method === 'PATCH' || req.method === 'POST') {
+      const formattedRecords = records.map(record => ({
+        id: record.id,
+        fields: record.fields,
+      }));
+      return res.status(200).json(formattedRecords);
+    } else if (req.method === 'PATCH') {
+      const { recordId, eventId, chauffeurId, status } = req.body;
+      console.log('PATCH Request body:', req.body);  // Log the request body
+      records = await base('Availability').update([
+        {
+          id: recordId,
+          fields: {
+            Event: [eventId],
+            Chauffeurs: [chauffeurId],
+            Availability: status,
+          },
+        },
+      ]);
+      console.log('PATCH Airtable response:', records);  // Log the Airtable response
+      return res.status(200).json(records);
+    } else if (req.method === 'POST') {
       const { eventId, chauffeurId, status } = req.body;
-      try {
-        console.log(`${req.method} Request body:`, req.body);  // Log the request body
-
-        // Check if a record already exists for the given event and chauffeur
-        const existingRecords = await base('Availability').select({
-          filterByFormula: `AND({Event}='${eventId}', {Chauffeurs}='${chauffeurId}')`,
-          fields: ['Availability', 'Chauffeurs', 'Event'],
-        }).all();
-
-        if (existingRecords.length > 0) {
-          // Update the existing record
-          const recordId = existingRecords[0].id;
-          records = await base('Availability').update([
-            {
-              id: recordId,
-              fields: {
-                Event: [eventId],
-                Chauffeurs: [chauffeurId],
-                Availability: status,
-              },
-            },
-          ]);
-          console.log('PATCH Airtable response:', records);  // Log the Airtable response
-        } else {
-          // Create a new record
-          records = await base('Availability').create([
-            {
-              fields: {
-                Event: [eventId],
-                Chauffeurs: [chauffeurId],
-                Availability: status,
-              },
-            },
-          ]);
-          console.log('POST Airtable response:', records);  // Log the Airtable response
-        }
-
-        res.status(200).json(records);
-      } catch (error) {
-        console.error(`Error ${req.method === 'PATCH' ? 'updating' : 'creating'} availability in Airtable:`, error);  // Log the error
-        res.status(500).json({ message: `Airtable ${req.method === 'PATCH' ? 'update' : 'create'} error`, error: (error as Error).message });
-      }
+      console.log('POST Request body:', req.body);  // Log the request body
+      records = await base('Availability').create([
+        {
+          fields: {
+            Event: [eventId],
+            Chauffeurs: [chauffeurId],
+            Availability: status,
+          },
+        },
+      ]);
+      console.log('POST Airtable response:', records);  // Log the Airtable response
+      return res.status(200).json(records);
     }
-
-    if (!records) {
-      return res.status(404).json({ message: 'No records found' });
-    }
-
-    const formattedRecords = records.map(record => ({
-      id: record.id,
-      fields: record.fields,
-    }));
-
-    res.status(200).json(formattedRecords);
   } catch (error) {
     console.error('Error handling request:', error);
-    res.status(500).json({ message: 'Error handling request', error: (error as Error).message });
+    return res.status(500).json({ message: 'Error handling request', error: (error as Error).message });
   }
 }
