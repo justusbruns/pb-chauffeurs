@@ -34,13 +34,14 @@ const SignUpForm: React.FC = () => {
 
     useEffect(() => {
         fetchChauffeurs();
-        fetchEvents(); // Fetch all events in the Chauffeurs view initially
+        fetchEvents(); // Fetch all events initially
         fetchAllAvailability(); // Fetch all availability records initially
     }, []);
 
     useEffect(() => {
         if (selectedChauffeur) {
-            filterAvailability(selectedChauffeur); // Filter availability based on selected chauffeur
+            // No need to fetch availability again, just filter the existing data
+            filterAvailability(selectedChauffeur);
         }
     }, [selectedChauffeur]);
 
@@ -59,14 +60,10 @@ const SignUpForm: React.FC = () => {
         }
     };
 
-    // Fetch the list of events from the specific Chauffeurs view in Airtable
+    // Fetch the list of events
     const fetchEvents = async () => {
         try {
-            const response = await axios.get('/api/airtable/events', {
-                params: {
-                    view: 'viwrQmtgDMoynYnfv' // Set to the 'Chauffeurs' view
-                }
-            });
+            const response = await axios.get('/api/airtable/events');
             const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string } }) => ({
                 id: record.id,
                 name: record.fields['Event name'],
@@ -86,11 +83,11 @@ const SignUpForm: React.FC = () => {
     const fetchAllAvailability = async () => {
         try {
             const response = await axios.get('/api/airtable/availability');
-            const availabilityData = response.data.map((record: { id: string; fields: { Event: string[]; Chauffeurs: string[]; Availability: string } }) => ({
+            const availabilityData = response.data.map((record: { id: string; eventId: string; chauffeurId: string; status: string }) => ({
                 id: record.id,
-                eventId: record.fields['Event'][0],
-                chauffeurId: record.fields['Chauffeurs'][0],
-                status: record.fields['Availability'],
+                eventId: record.eventId,
+                chauffeurId: record.chauffeurId,
+                status: record.status,
             }));
             setAvailability(availabilityData);
         } catch (error) {
@@ -160,6 +157,8 @@ const SignUpForm: React.FC = () => {
                         const availabilityForEvent = availability.find(
                             avail => avail.eventId === event.id && avail.chauffeurId === selectedChauffeur
                         );
+        
+                        console.log("Matching availability for event:", availabilityForEvent);  // Add this line
 
                         return (
                             <div key={event.id} className="event-item">

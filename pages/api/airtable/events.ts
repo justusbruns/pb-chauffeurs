@@ -26,6 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const records = await base('Events').select({
+      view: 'viwrQmtgDMoynYnfv', // Add the view parameter for "Chauffeurs" view
       fields: ['Event name', 'Starts at', 'Stops at', 'Location City', 'Travel Time'],
     }).all();
 
