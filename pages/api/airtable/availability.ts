@@ -27,15 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let records;
 
     if (req.method === 'GET') {
-      const { chauffeurId } = req.query;
-
-      if (!chauffeurId) {
-        return res.status(400).json({ message: "Missing chauffeurId query parameter" });
-      }
-
-      // Retrieve records in the Availability table where Chauffeurs contains the selected chauffeurId
+      // Retrieve all records in the Availability table
       records = await base('Availability').select({
-        filterByFormula: `ARRAYJOIN({Chauffeurs}, ",") = '${chauffeurId}'`,
         fields: ['Availability', 'Chauffeurs', 'Event'],
       }).all();
 

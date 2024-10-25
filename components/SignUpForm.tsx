@@ -25,11 +25,6 @@ interface Availability {
     status: string; // "Available", "Not Available", "Maybe Available"
 }
 
-interface AirtableRecord<T> {
-    id: string;
-    fields: T;
-}
-
 const SignUpForm: React.FC = () => {
     const [events, setEvents] = useState<Event[]>([]);
     const [chauffeurs, setChauffeurs] = useState<Chauffeur[]>([]);
@@ -40,11 +35,13 @@ const SignUpForm: React.FC = () => {
     useEffect(() => {
         fetchChauffeurs();
         fetchEvents(); // Fetch all events initially
+        fetchAllAvailability(); // Fetch all availability records initially
     }, []);
 
     useEffect(() => {
         if (selectedChauffeur) {
-            fetchAvailability(selectedChauffeur);
+            // No need to fetch availability again, just filter the existing data
+            filterAvailability(selectedChauffeur);
         }
     }, [selectedChauffeur]);
 
@@ -52,7 +49,7 @@ const SignUpForm: React.FC = () => {
     const fetchChauffeurs = async () => {
         try {
             const response = await axios.get('/api/airtable/chauffeurs');
-            const chauffeursData = response.data.map((record: AirtableRecord<{ Name: string }>) => ({
+            const chauffeursData = response.data.map((record: { id: string; fields: { Name: string } }) => ({
                 id: record.id,
                 name: record.fields['Name'],
             }));
@@ -67,7 +64,7 @@ const SignUpForm: React.FC = () => {
     const fetchEvents = async () => {
         try {
             const response = await axios.get('/api/airtable/events');
-            const eventsData = response.data.map((record: AirtableRecord<{ 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string }>) => ({
+            const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string } }) => ({
                 id: record.id,
                 name: record.fields['Event name'],
                 start: record.fields['Starts at'],
@@ -82,16 +79,15 @@ const SignUpForm: React.FC = () => {
         }
     };
 
-    // Fetch the availability for the selected chauffeur
-    const fetchAvailability = async (chauffeurId: string) => {
+    // Fetch all availability records
+    const fetchAllAvailability = async () => {
         try {
-            const response = await axios.get(`/api/airtable/availability?chauffeurId=${chauffeurId}`);
-            console.log("API response data:", response.data);  // Add this line
-            const availabilityData = response.data.map((record: AirtableRecord<{ Event: string[]; Chauffeurs: string[]; Availability: string }>) => ({
+            const response = await axios.get('/api/airtable/availability');
+            const availabilityData = response.data.map((record: { id: string; eventId: string; chauffeurId: string; status: string }) => ({
                 id: record.id,
-                eventId: record.fields['Event'][0],
-                chauffeurId: record.fields['Chauffeurs'][0],
-                status: record.fields['Availability'],
+                eventId: record.eventId,
+                chauffeurId: record.chauffeurId,
+                status: record.status,
             }));
             setAvailability(availabilityData);
         } catch (error) {
@@ -100,57 +96,37 @@ const SignUpForm: React.FC = () => {
         }
     };
 
+    // Filter availability records for the selected chauffeur
+    const filterAvailability = (chauffeurId: string) => {
+        const filteredAvailability = availability.filter(avail => avail.chauffeurId === chauffeurId);
+        setAvailability(filteredAvailability);
+    };
+
     // Update or create availability for a given event and chauffeur
     const updateAvailability = async (eventId: string, status: string) => {
         try {
             const existingRecord = availability.find(avail => avail.eventId === eventId && avail.chauffeurId === selectedChauffeur);
             if (existingRecord) {
-                // Update the existing record using the recordId
                 await axios.patch('/api/airtable/availability', {
-                    recordId: existingRecord.id,  // Use the Airtable record ID for the existing availability
+                    recordId: existingRecord.id,
                     eventId,
                     chauffeurId: selectedChauffeur,
                     status
                 });
-                // Update the local state
-                setAvailability(prevAvailability =>
-                    prevAvailability.map(avail =>
-                        avail.id === existingRecord.id ? { ...avail, status } : avail
-                    )
-                );
+                setAvailability(prev => prev.map(avail => avail.id === existingRecord.id ? { ...avail, status } : avail));
             } else {
-                // Create a new record in the Availability table
                 const response = await axios.post('/api/airtable/availability', {
                     eventId,
                     chauffeurId: selectedChauffeur,
                     status
                 });
                 const newRecord = response.data[0];
-                // Update the local state
-                setAvailability(prevAvailability => [...prevAvailability, {
-                    id: newRecord.id,
-                    eventId,
-                    chauffeurId: selectedChauffeur,
-                    status
-                }]);
+                setAvailability(prev => [...prev, { id: newRecord.id, eventId, chauffeurId: selectedChauffeur, status }]);
             }
         } catch (error) {
             console.error('Error updating availability:', error);
             setErrorMessage('Failed to update availability');
         }
-    };
-
-    // Format date and time
-    const formatDateTime = (dateTime: string) => {
-        const date = new Date(dateTime);
-        return format(date, "HH:mm 'on' EEEE, do 'of' MMMM");
-    };
-
-    // Format travel time
-    const formatTravelTime = (travelTime: string) => {
-        if (typeof travelTime !== 'string') return '';
-        const [hours, minutes] = travelTime.split(':').map(Number);
-        return `${hours}:${minutes.toString().padStart(2, '0')}`;
     };
 
     return (
@@ -179,8 +155,8 @@ const SignUpForm: React.FC = () => {
                     return (
                         <div key={event.id} className="event-item">
                             <h3 className="event-name">{event.name}</h3>
-                            <p className="event-details">Starts at: {formatDateTime(event.start)}</p>
-                            <p className="event-details">Stops at: {formatDateTime(event.stop)}</p>
+                            <p className="event-details">Starts at: {format(new Date(event.start), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
+                            <p className="event-details">Stops at: {format(new Date(event.stop), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
                             <p className="event-details">City: {event.city}</p>
                             {event.travelTime && <p className="event-details">Travel Time: {formatTravelTime(event.travelTime)}</p>}
                             <div className="availability-dropdown">
