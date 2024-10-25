@@ -39,11 +39,11 @@ const SignUpForm: React.FC = () => {
 
     useEffect(() => {
         fetchChauffeurs();
+        fetchEvents(); // Fetch all events initially
     }, []);
 
     useEffect(() => {
         if (selectedChauffeur) {
-            fetchEvents();
             fetchAvailability(selectedChauffeur);
         }
     }, [selectedChauffeur]);
@@ -172,6 +172,7 @@ const SignUpForm: React.FC = () => {
 
             <div className="events-container">
                 {events.map((event) => {
+                    // Match the event with its availability status for the selected chauffeur
                     const availabilityForEvent = availability.find(avail => avail.eventId === event.id);
                     console.log("Event ID:", event.id); // Debugging log
                     console.log("Availability for event:", availabilityForEvent); // Debugging log
