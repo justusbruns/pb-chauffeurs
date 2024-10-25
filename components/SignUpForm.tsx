@@ -75,6 +75,7 @@ const SignUpForm: React.FC = () => {
                 travelTime: record.fields['Travel Time'],
                 status: record.fields['Status'], // Added status field
             }));
+            console.log("Fetched events data:", eventsData); // Debugging log
             setEvents(eventsData);
         } catch (error) {
             console.error('Error fetching events:', error);
