@@ -11,6 +11,7 @@ interface Event {
     stop: string;
     city: string;
     travelTime: string;
+    status: string; // Added status field
 }
 
 interface Chauffeur {
@@ -30,6 +31,7 @@ const SignUpForm: React.FC = () => {
     const [chauffeurs, setChauffeurs] = useState<Chauffeur[]>([]);
     const [availability, setAvailability] = useState<Availability[]>([]);
     const [selectedChauffeur, setSelectedChauffeur] = useState<string>('');
+    const [selectedStatus, setSelectedStatus] = useState<string>('reserved'); // Default status filter
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
@@ -64,13 +66,14 @@ const SignUpForm: React.FC = () => {
     const fetchEvents = async () => {
         try {
             const response = await axios.get('/api/airtable/events');
-            const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string } }) => ({
+            const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string; Status: string } }) => ({
                 id: record.id,
                 name: record.fields['Event name'],
                 start: record.fields['Starts at'],
                 stop: record.fields['Stops at'],
                 city: record.fields['Location City'],
                 travelTime: record.fields['Travel Time'],
+                status: record.fields['Status'], // Added status field
             }));
             setEvents(eventsData);
         } catch (error) {
@@ -136,6 +139,11 @@ const SignUpForm: React.FC = () => {
         return `${hours}:${minutes.toString().padStart(2, '0')}`;
     };
 
+    // Filter events based on selected status
+    const filteredEvents = selectedStatus === 'All Events'
+        ? events
+        : events.filter(event => event.status === selectedStatus);
+
     return (
         <div className="sign-up-form">
             <h1 className="title">Sign up for Poem Booth rides</h1>
@@ -151,9 +159,16 @@ const SignUpForm: React.FC = () => {
                 ))}
             </select>
 
+            <label htmlFor="status-select" className="status-label">Event Status:</label>
+            <select id="status-select" className="status-dropdown" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
+                <option value="reserved">Confirmed</option>
+                <option value="concept">To be confirmed</option>
+                <option value="All Events">All Events</option>
+            </select>
+
             {selectedChauffeur && (
                 <div className="events-container">
-                    {events.map((event) => {
+                    {filteredEvents.map((event) => {
                         const availabilityForEvent = availability.find(
                             avail => avail.eventId === event.id && avail.chauffeurId === selectedChauffeur
                         );
@@ -196,11 +211,11 @@ const SignUpForm: React.FC = () => {
                     margin-bottom: 20px;
                     text-align: center;
                 }
-                .chauffeur-label {
+                .chauffeur-label, .status-label {
                     font-weight: bold;
                     margin-bottom: 10px;
                 }
-                .chauffeur-dropdown {
+                .chauffeur-dropdown, .status-dropdown {
                     margin-bottom: 20px;
                     padding: 5px;
                     width: 100%;
