@@ -137,6 +137,7 @@ const SignUpForm: React.FC = () => {
 
     // Format travel time
     const formatTravelTime = (travelTime: string) => {
+        if (typeof travelTime !== 'string') return '';
         const [hours, minutes] = travelTime.split(':').map(Number);
         return `${hours}:${minutes.toString().padStart(2, '0')}`;
     };
