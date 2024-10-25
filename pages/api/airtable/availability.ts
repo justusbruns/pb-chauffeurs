@@ -45,9 +45,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Format records to send to frontend
       const formattedRecords = records.map(record => ({
         id: record.id,
-        eventId: record.fields['Event'][0],  // Assuming Event is a linked record
-        chauffeurId: record.fields['Chauffeurs'][0],  // Assuming Chauffeurs is a linked record
-        status: record.fields['Availability'],  // Availability status
+        eventId: record.fields['Event'] ? record.fields['Event'][0] : null,  // Add safety check
+        chauffeurId: record.fields['Chauffeurs'] ? record.fields['Chauffeurs'][0] : null,  // Add safety check
+        status: record.fields['Availability'] || 'Unavailable',  // Fallback for missing status
       }));
 
       // Log formatted records to check if everything is mapped properly
