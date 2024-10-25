@@ -63,7 +63,7 @@ const SignUpForm: React.FC = () => {
     // Fetch the list of events from the 'Chauffeurs' view
     const fetchEvents = async () => {
         try {
-            const response = await axios.get('/api/airtable/events?view=Chauffeurs');
+            const response = await axios.get('/api/airtable/events?view=viwrQmtgDMoynYnfv');
             const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string } }) => ({
                 id: record.id,
                 name: record.fields['Event name'],
