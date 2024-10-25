@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { format } from 'date-fns';
 
 interface Event {
     id: string;
@@ -128,8 +129,21 @@ const SignUpForm: React.FC = () => {
         }
     };
 
+    // Format date and time
+    const formatDateTime = (dateTime: string) => {
+        const date = new Date(dateTime);
+        return format(date, "HH:mm 'on' EEEE, do 'of' MMMM");
+    };
+
+    // Format travel time
+    const formatTravelTime = (travelTime: string) => {
+        const [hours, minutes] = travelTime.split(':').map(Number);
+        return `${hours}:${minutes.toString().padStart(2, '0')}`;
+    };
+
     return (
         <div className="sign-up-form">
+            <h1 className="title">Sign up for Poem Booth rides</h1>
             {errorMessage && <p className="error">{errorMessage}</p>}
 
             <label htmlFor="chauffeur-select" className="chauffeur-label">Chauffeur Name:</label>
@@ -149,10 +163,10 @@ const SignUpForm: React.FC = () => {
                     return (
                         <div key={event.id} className="event-item">
                             <h3 className="event-name">{event.name}</h3>
-                            <p className="event-details">Starts at: {event.start}</p>
-                            <p className="event-details">Stops at: {event.stop}</p>
+                            <p className="event-details">Starts at: {formatDateTime(event.start)}</p>
+                            <p className="event-details">Stops at: {formatDateTime(event.stop)}</p>
                             <p className="event-details">City: {event.city}</p>
-                            <p className="event-details">Travel Time: {event.travelTime}</p>
+                            {event.travelTime && <p className="event-details">Travel Time: {formatTravelTime(event.travelTime)}</p>}
                             <div className="availability-dropdown">
                                 <select
                                     value={availabilityForEvent?.status || 'Select Availability'}
@@ -174,6 +188,12 @@ const SignUpForm: React.FC = () => {
                 .sign-up-form {
                     font-family: Arial, sans-serif;
                     margin: 20px;
+                }
+                .title {
+                    font-size: 24px;
+                    font-weight: bold;
+                    margin-bottom: 20px;
+                    text-align: center;
                 }
                 .chauffeur-label {
                     font-weight: bold;
