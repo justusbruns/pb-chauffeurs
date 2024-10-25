@@ -83,11 +83,11 @@ const SignUpForm: React.FC = () => {
     const fetchAllAvailability = async () => {
         try {
             const response = await axios.get('/api/airtable/availability');
-            const availabilityData = response.data.map((record: { id: string; eventId: string; chauffeurId: string; status: string }) => ({
+            const availabilityData = response.data.map((record: { id: string; fields: { Event: string[]; Chauffeurs: string[]; Availability: string } }) => ({
                 id: record.id,
-                eventId: record.eventId,
-                chauffeurId: record.chauffeurId,
-                status: record.status,
+                eventId: record.fields['Event'][0],
+                chauffeurId: record.fields['Chauffeurs'][0],
+                status: record.fields['Availability'],
             }));
             setAvailability(availabilityData);
         } catch (error) {
