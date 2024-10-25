@@ -35,13 +35,11 @@ const SignUpForm: React.FC = () => {
     useEffect(() => {
         fetchChauffeurs();
         fetchEvents(); // Fetch all events initially
-        fetchAllAvailability(); // Fetch all availability records initially
     }, []);
 
     useEffect(() => {
         if (selectedChauffeur) {
-            // No need to fetch availability again, just filter the existing data
-            filterAvailability(selectedChauffeur);
+            fetchAvailability(selectedChauffeur);
         }
     }, [selectedChauffeur]);
 
@@ -79,27 +77,22 @@ const SignUpForm: React.FC = () => {
         }
     };
 
-    // Fetch all availability records
-    const fetchAllAvailability = async () => {
+    // Fetch the availability for the selected chauffeur
+    const fetchAvailability = async (chauffeurId: string) => {
         try {
-            const response = await axios.get('/api/airtable/availability');
-            const availabilityData = response.data.map((record: { id: string; eventId: string; chauffeurId: string; status: string }) => ({
+            const response = await axios.get(`/api/airtable/availability?chauffeurId=${chauffeurId}`);
+            console.log("API response data:", response.data);  // Add this line
+            const availabilityData = response.data.map((record: { id: string; fields: { Event: string[]; Chauffeurs: string[]; Availability: string } }) => ({
                 id: record.id,
-                eventId: record.eventId,
-                chauffeurId: record.chauffeurId,
-                status: record.status,
+                eventId: record.fields['Event'][0],
+                chauffeurId: record.fields['Chauffeurs'][0],
+                status: record.fields['Availability'],
             }));
             setAvailability(availabilityData);
         } catch (error) {
             console.error('Error fetching availability:', error);
             setErrorMessage('Failed to fetch availability');
         }
-    };
-
-    // Filter availability records for the selected chauffeur
-    const filterAvailability = (chauffeurId: string) => {
-        const filteredAvailability = availability.filter(avail => avail.chauffeurId === chauffeurId);
-        setAvailability(filteredAvailability);
     };
 
     // Update or create availability for a given event and chauffeur
