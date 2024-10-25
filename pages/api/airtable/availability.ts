@@ -28,8 +28,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === 'GET') {
       const { chauffeurId } = req.query;
+      
+      if (!chauffeurId) {
+        return res.status(400).json({ message: "Missing chauffeurId query parameter" });
+      }
+      
       records = await base('Availability').select({
-        filterByFormula: `{Chauffeurs}='${chauffeurId}'`,
+        filterByFormula: `{Chauffeurs} = '${chauffeurId}'`,
         fields: ['Availability', 'Chauffeurs', 'Event'],
       }).all();
 
@@ -44,11 +49,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log("Formatted availability records being sent to frontend:", formattedRecords);
       return res.status(200).json(formattedRecords);
-
     } else if (req.method === 'PATCH') {
       const { recordId, eventId, chauffeurId, status } = req.body;
-      console.log('PATCH Request body:', req.body);
-
       records = await base('Availability').update([
         {
           id: recordId,
@@ -59,14 +61,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
         },
       ]);
-
-      console.log('PATCH Airtable response:', records);
       return res.status(200).json(records);
-
+    
     } else if (req.method === 'POST') {
       const { eventId, chauffeurId, status } = req.body;
-      console.log('POST Request body:', req.body);
-
       records = await base('Availability').create([
         {
           fields: {
@@ -76,8 +74,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
         },
       ]);
-
-      console.log('POST Airtable response:', records);
       return res.status(200).json(records);
     }
   } catch (error) {
