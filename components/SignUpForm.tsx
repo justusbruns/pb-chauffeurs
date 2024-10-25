@@ -129,6 +129,13 @@ const SignUpForm: React.FC = () => {
         }
     };
 
+    // Format travel time
+    const formatTravelTime = (travelTime: string) => {
+        if (typeof travelTime !== 'string') return '';
+        const [hours, minutes] = travelTime.split(':').map(Number);
+        return `${hours}:${minutes.toString().padStart(2, '0')}`;
+    };
+
     return (
         <div className="sign-up-form">
             <h1 className="title">Sign up for Poem Booth rides</h1>
