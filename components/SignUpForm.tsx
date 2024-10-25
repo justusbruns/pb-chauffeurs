@@ -22,29 +22,28 @@ interface Availability {
     id: string;  // Airtable record ID for availability
     eventId: string;
     chauffeurId: string;
-    status: string;
+    status: string; // "Available", "Not Available", "Maybe Available"
 }
 
 const SignUpForm: React.FC = () => {
     const [events, setEvents] = useState<Event[]>([]);
     const [chauffeurs, setChauffeurs] = useState<Chauffeur[]>([]);
     const [availability, setAvailability] = useState<Availability[]>([]);
-    const [filteredAvailability, setFilteredAvailability] = useState<Availability[]>([]);
     const [selectedChauffeur, setSelectedChauffeur] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
         fetchChauffeurs();
         fetchEvents();
-        fetchAllAvailability();
     }, []);
 
     useEffect(() => {
         if (selectedChauffeur) {
-            filterAvailability(selectedChauffeur);
+            fetchAvailabilityByChauffeur(selectedChauffeur); // Fetch data for the newly selected chauffeur
         }
-    }, [selectedChauffeur, availability]);
+    }, [selectedChauffeur]);
 
+    // Fetch the list of chauffeurs
     const fetchChauffeurs = async () => {
         try {
             const response = await axios.get('/api/airtable/chauffeurs');
@@ -58,6 +57,7 @@ const SignUpForm: React.FC = () => {
         }
     };
 
+    // Fetch the list of events
     const fetchEvents = async () => {
         try {
             const response = await axios.get('/api/airtable/events');
@@ -75,9 +75,10 @@ const SignUpForm: React.FC = () => {
         }
     };
 
-    const fetchAllAvailability = async () => {
+    // Fetch availability for a specific chauffeur and overwrite availability data
+    const fetchAvailabilityByChauffeur = async (chauffeurId: string) => {
         try {
-            const response = await axios.get('/api/airtable/availability');
+            const response = await axios.get(`/api/airtable/availability?chauffeurId=${chauffeurId}`);
             const availabilityData = response.data.map((record: { id: string; fields: { Event: string[]; Chauffeurs: string[]; Availability: string } }) => ({
                 id: record.id,
                 eventId: record.fields['Event'][0],
@@ -91,10 +92,7 @@ const SignUpForm: React.FC = () => {
         }
     };
 
-    const filterAvailability = (chauffeurId: string) => {
-        setFilteredAvailability(availability.filter(avail => avail.chauffeurId === chauffeurId));
-    };
-
+    // Update or create availability for a given event and chauffeur
     const updateAvailability = async (eventId: string, status: string) => {
         try {
             const existingRecord = availability.find(avail => avail.eventId === eventId && avail.chauffeurId === selectedChauffeur);
@@ -112,13 +110,16 @@ const SignUpForm: React.FC = () => {
                     chauffeurId: selectedChauffeur,
                     status
                 });
-                setAvailability(prev => [...prev, { id: response.data[0].id, eventId, chauffeurId: selectedChauffeur, status }]);
+                const newRecord = response.data[0];
+                setAvailability(prev => [...prev, { id: newRecord.id, eventId, chauffeurId: selectedChauffeur, status }]);
             }
         } catch (error) {
             console.error('Error updating availability:', error);
             setErrorMessage('Failed to update availability');
         }
     };
+
+
 
     return (
         <div className="sign-up-form">
