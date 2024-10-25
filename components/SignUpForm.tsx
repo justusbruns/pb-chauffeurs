@@ -88,9 +88,9 @@ const SignUpForm: React.FC = () => {
             const response = await axios.get(`/api/airtable/availability?chauffeurId=${chauffeurId}`);
             const availabilityData = response.data.map((record: AirtableRecord<{ Event: string[]; Chauffeurs: string[]; Availability: string }>) => ({
                 id: record.id,  // Capture the Airtable record ID for the availability record
-                eventId: record.fields['Event'][0],
-                chauffeurId: record.fields['Chauffeurs'][0],
-                status: record.fields['Availability'],
+                eventId: record.fields['Event'][0],  // Event ID (linked record)
+                chauffeurId: record.fields['Chauffeurs'][0],  // Chauffeur ID (linked record)
+                status: record.fields['Availability'],  // Availability status
             }));
 
             console.log("Fetched availability data:", availabilityData); // Debugging log
@@ -172,10 +172,11 @@ const SignUpForm: React.FC = () => {
 
             <div className="events-container">
                 {events.map((event) => {
-                    // Match the event with its availability status for the selected chauffeur
-                    const availabilityForEvent = availability.find(avail => avail.eventId === event.id);
+                    // Match the event and chauffeur with its availability status
+                    const availabilityForEvent = availability.find(avail => avail.eventId === event.id && avail.chauffeurId === selectedChauffeur);
+
                     console.log("Event ID:", event.id); // Debugging log
-                    console.log("Availability for event:", availabilityForEvent); // Debugging log
+                    console.log("Matched availability:", availabilityForEvent); // Debugging log
 
                     return (
                         <div key={event.id} className="event-item">
@@ -200,6 +201,7 @@ const SignUpForm: React.FC = () => {
                     );
                 })}
             </div>
+
 
             <style jsx>{`
                 .sign-up-form {
