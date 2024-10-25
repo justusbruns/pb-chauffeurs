@@ -19,10 +19,10 @@ interface Chauffeur {
 }
 
 interface Availability {
-    id: string;  // Airtable record ID for availability
+    id: string;
     eventId: string;
     chauffeurId: string;
-    status: string; // "Available", "Not Available", "Maybe Available"
+    status: string;
 }
 
 const SignUpForm: React.FC = () => {
@@ -33,78 +33,73 @@ const SignUpForm: React.FC = () => {
     const [selectedChauffeur, setSelectedChauffeur] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    // Fetch all data when the component mounts
     useEffect(() => {
-        fetchChauffeurs();
-        fetchEvents();
-        fetchAllAvailability();
+        const fetchData = async () => {
+            await Promise.all([fetchChauffeurs(), fetchEvents(), fetchAllAvailability()]);
+        };
+        fetchData();
     }, []);
 
-    // Re-filter the availability records whenever the chauffeur is selected or data changes
     useEffect(() => {
         if (selectedChauffeur) {
-            filterAvailability(selectedChauffeur); 
+            filterAvailability(selectedChauffeur);
         }
     }, [selectedChauffeur, availability]);
 
-    // Fetch the list of chauffeurs
+    // Fetches all chauffeurs
     const fetchChauffeurs = async () => {
         try {
             const response = await axios.get('/api/airtable/chauffeurs');
-            const chauffeursData = response.data.map((record: { id: string; fields: { Name: string } }) => ({
+            setChauffeurs(response.data.map((record: { id: string; fields: { Name: string } }) => ({
                 id: record.id,
                 name: record.fields['Name'],
-            }));
-            setChauffeurs(chauffeursData);
+            })));
         } catch (error) {
             console.error('Error fetching chauffeurs:', error);
             setErrorMessage('Failed to fetch chauffeurs');
         }
     };
 
-    // Fetch the list of events
+    // Fetches all events
     const fetchEvents = async () => {
         try {
             const response = await axios.get('/api/airtable/events');
-            const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string } }) => ({
+            setEvents(response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string } }) => ({
                 id: record.id,
                 name: record.fields['Event name'],
                 start: record.fields['Starts at'],
                 stop: record.fields['Stops at'],
                 city: record.fields['Location City'],
                 travelTime: record.fields['Travel Time'],
-            }));
-            setEvents(eventsData);
+            })));
         } catch (error) {
             console.error('Error fetching events:', error);
             setErrorMessage('Failed to fetch events');
         }
     };
 
-    // Fetch all availability records
+    // Fetches all availability records
     const fetchAllAvailability = async () => {
         try {
             const response = await axios.get('/api/airtable/availability');
-            const availabilityData = response.data.map((record: { id: string; fields: { Event: string[]; Chauffeurs: string[]; Availability: string } }) => ({
+            setAvailability(response.data.map((record: { id: string; fields: { Event: string[]; Chauffeurs: string[]; Availability: string } }) => ({
                 id: record.id,
                 eventId: record.fields['Event'][0],
                 chauffeurId: record.fields['Chauffeurs'][0],
                 status: record.fields['Availability'],
-            }));
-            setAvailability(availabilityData); // Store all availability data
+            })));
         } catch (error) {
             console.error('Error fetching availability:', error);
             setErrorMessage('Failed to fetch availability');
         }
     };
 
-    // Filter availability records for the selected chauffeur
+    // Filters availability records for the selected chauffeur
     const filterAvailability = (chauffeurId: string) => {
-        const filtered = availability.filter(avail => avail.chauffeurId === chauffeurId);
-        setFilteredAvailability(filtered); // Store filtered availability
+        setFilteredAvailability(availability.filter(avail => avail.chauffeurId === chauffeurId));
     };
 
-    // Update or create availability for a given event and chauffeur
+    // Updates or creates availability for the selected chauffeur and event
     const updateAvailability = async (eventId: string, status: string) => {
         try {
             const existingRecord = availability.find(avail => avail.eventId === eventId && avail.chauffeurId === selectedChauffeur);
@@ -122,20 +117,12 @@ const SignUpForm: React.FC = () => {
                     chauffeurId: selectedChauffeur,
                     status
                 });
-                const newRecord = response.data[0];
-                setAvailability(prev => [...prev, { id: newRecord.id, eventId, chauffeurId: selectedChauffeur, status }]);
+                setAvailability(prev => [...prev, { id: response.data[0].id, eventId, chauffeurId: selectedChauffeur, status }]);
             }
         } catch (error) {
             console.error('Error updating availability:', error);
             setErrorMessage('Failed to update availability');
         }
-    };
-
-    // Format travel time
-    const formatTravelTime = (travelTime: string) => {
-        if (typeof travelTime !== 'string') return '';
-        const [hours, minutes] = travelTime.split(':').map(Number);
-        return `${hours}:${minutes.toString().padStart(2, '0')}`;
     };
 
     return (
@@ -161,16 +148,13 @@ const SignUpForm: React.FC = () => {
             {selectedChauffeur && (
                 <div className="events-container">
                     {events.map((event) => {
-                        const availabilityForEvent = filteredAvailability.find(
-                            avail => avail.eventId === event.id
-                        );
+                        const availabilityForEvent = filteredAvailability.find(avail => avail.eventId === event.id);
                         return (
                             <div key={event.id} className="event-item">
                                 <h3 className="event-name">{event.name}</h3>
                                 <p className="event-details">Starts at: {format(new Date(event.start), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
                                 <p className="event-details">Stops at: {format(new Date(event.stop), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
                                 <p className="event-details">City: {event.city}</p>
-                                {event.travelTime && <p className="event-details">Travel Time: {formatTravelTime(event.travelTime)}</p>}
                                 <div className="availability-dropdown">
                                     <select
                                         value={availabilityForEvent?.status || 'Select Availability'}
@@ -182,7 +166,6 @@ const SignUpForm: React.FC = () => {
                                         <option value="Maybe Available">💅 Maybe Available</option>
                                     </select>
                                 </div>
-                                <hr className="event-separator" />
                             </div>
                         );
                     })}
