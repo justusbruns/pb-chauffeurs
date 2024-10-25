@@ -43,9 +43,8 @@ const SignUpForm: React.FC = () => {
 
     useEffect(() => {
         if (selectedChauffeur) {
-            // Clear previous events and availability when a new chauffeur is selected
-            setEvents([]);
-            setAvailability([]);
+            setEvents([]); // Clear previous events
+            setAvailability([]); // Clear previous availability
             fetchEvents();
             fetchAvailability(selectedChauffeur);
         }
