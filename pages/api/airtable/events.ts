@@ -1,19 +1,5 @@
-// pages/api/airtable/events.ts
-import type { NextApiRequest, NextApiResponse } from 'next';
-import Airtable from 'airtable';
-
-const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
-const BASE_ID = process.env.AIRTABLE_BASE_ID;
-
-if (!AIRTABLE_TOKEN || !BASE_ID) {
-  throw new Error('Missing Airtable configuration');
-}
-
-Airtable.configure({
-  apiKey: AIRTABLE_TOKEN,
-});
-
-const base = Airtable.base(BASE_ID!);
+import { NextApiRequest, NextApiResponse } from 'next';
+import { base } from '../../lib/airtable';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -27,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const records = await base('Events').select({
       view: 'viwrQmtgDMoynYnfv', // Add the view parameter for "Chauffeurs" view
-      fields: ['Event name', 'Starts at', 'Stops at', 'Location City', 'Travel Time'],
+      fields: ['Event name', 'Starts at', 'Stops at', 'Location City', 'Travel Time', 'Status'], // Include the Status field
     }).all();
 
     const formattedRecords = records.map(record => ({
