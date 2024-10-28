@@ -72,6 +72,7 @@ const SignUpForm: React.FC = () => {
                 stop: record.fields['Stops at'],
                 city: record.fields['Location City'],
                 travelTime: record.fields['Travel Time'],
+                status: record.fields['Status'], 
             }));
             setEvents(eventsData);
         } catch (error) {
