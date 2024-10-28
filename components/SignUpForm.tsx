@@ -11,7 +11,7 @@ interface Event {
     stop: string;
     city: string;
     travelTime: string;
-    status: string; // Added status field
+    status: string;
 }
 
 interface Chauffeur {
@@ -65,14 +65,13 @@ const SignUpForm: React.FC = () => {
     const fetchEvents = async () => {
         try {
             const response = await axios.get('/api/airtable/events');
-            const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string; Status: string } }) => ({
+            const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string } }) => ({
                 id: record.id,
                 name: record.fields['Event name'],
                 start: record.fields['Starts at'],
                 stop: record.fields['Stops at'],
                 city: record.fields['Location City'],
                 travelTime: record.fields['Travel Time'],
-                status: record.fields['Status'], // Added status field
             }));
             setEvents(eventsData);
         } catch (error) {
@@ -85,11 +84,11 @@ const SignUpForm: React.FC = () => {
     const fetchAllAvailability = async () => {
         try {
             const response = await axios.get('/api/airtable/availability');
-            const availabilityData = response.data.map((record: { id: string; fields: { Event: string[]; Chauffeurs: string[]; Availability: string } }) => ({
+            const availabilityData = response.data.map((record: { id: string; eventId: string; chauffeurId: string; status: string }) => ({
                 id: record.id,
-                eventId: record.fields['Event'][0],
-                chauffeurId: record.fields['Chauffeurs'][0],
-                status: record.fields['Availability'],
+                eventId: record.eventId,
+                chauffeurId: record.chauffeurId,
+                status: record.status,
             }));
             setAvailability(availabilityData);
         } catch (error) {
@@ -219,12 +218,15 @@ const SignUpForm: React.FC = () => {
                     font-size: 18px;
                     font-weight: bold;
                 }
-                .event-status {
-                    font-weight: normal;
-                }
                 .event-details {
                     margin: 5px 0;
                 }
+
+                .event-status {
+                    font-weight: normal;
+                    font-color: #C9DA9A;
+                }
+
                 .availability-dropdown {
                     margin-top: 10px;
                 }
