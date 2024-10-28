@@ -134,7 +134,7 @@ const SignUpForm: React.FC = () => {
     // Format travel time
     const formatTravelTime = (travelTime: string) => {
         const totalSeconds = parseInt(travelTime, 10);
-        if (typeof travelTime !== 'string') return '';
+        if (isNaN(totalSeconds)) return '';
 
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
