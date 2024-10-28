@@ -132,10 +132,15 @@ const SignUpForm: React.FC = () => {
     };
 
     // Format travel time
-        const formatTravelTime = (travelTime: string | null | undefined) => {
-            // Check if travelTime is a valid string; otherwise, return an empty string
-            return travelTime ? travelTime : '';
-        };};
+    const formatTravelTime = (travelTime: string) => {
+        const totalSeconds = parseInt(travelTime, 10);
+        if (typeof travelTime !== 'string') return '';
+
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+        return `${hours}:${minutes.toString().padStart(2, '0')}`;
+    };
 
     return (
         <div className="sign-up-form">
