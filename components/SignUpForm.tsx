@@ -138,7 +138,6 @@ const SignUpForm: React.FC = () => {
 
     return (
         <div className="sign-up-form">
-            <h1 className="title">Sign up for Poem Booth rides</h1>
             {errorMessage && <p className="error">{errorMessage}</p>}
 
             <label htmlFor="chauffeur-select" className="chauffeur-label">Chauffeur Name:</label>
@@ -223,7 +222,7 @@ const SignUpForm: React.FC = () => {
                     margin-top: 10px;
                 }
                 .event-separator {
-                    border: 1px solid #ccc;
+                    border: 1px solid #C9DA9A;
                     margin-top: 20px;
                 }
             `}</style>
