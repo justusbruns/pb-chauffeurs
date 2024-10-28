@@ -225,7 +225,7 @@ const SignUpForm: React.FC = () => {
 
                 .event-status {
                     font-weight: normal;
-                    font-color: #C9DA9A;
+                    color: #C9DA9A;
                 }
 
                 .availability-dropdown {
