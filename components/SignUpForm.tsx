@@ -31,16 +31,12 @@ const SignUpForm: React.FC = () => {
     const [availability, setAvailability] = useState<Availability[]>([]);
     const [selectedChauffeur, setSelectedChauffeur] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [password, setPassword] = useState<string>('');
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
     useEffect(() => {
-        if (isAuthenticated) {
-            fetchChauffeurs();
-            fetchEvents(); // Fetch all events initially
-            fetchAllAvailability(); // Fetch all availability records initially
-        }
-    }, [isAuthenticated]);
+        fetchChauffeurs();
+        fetchEvents(); // Fetch all events initially
+        fetchAllAvailability(); // Fetch all availability records initially
+    }, []);
 
     useEffect(() => {
         if (selectedChauffeur) {
@@ -87,11 +83,11 @@ const SignUpForm: React.FC = () => {
     const fetchAllAvailability = async () => {
         try {
             const response = await axios.get('/api/airtable/availability');
-            const availabilityData = response.data.map((record: { id: string; fields: { Event: string[]; Chauffeurs: string[]; Availability: string } }) => ({
+            const availabilityData = response.data.map((record: { id: string; eventId: string; chauffeurId: string; status: string }) => ({
                 id: record.id,
-                eventId: record.fields['Event'][0],
-                chauffeurId: record.fields['Chauffeurs'][0],
-                status: record.fields['Availability'],
+                eventId: record.eventId,
+                chauffeurId: record.chauffeurId,
+                status: record.status,
             }));
             setAvailability(availabilityData);
         } catch (error) {
@@ -140,81 +136,53 @@ const SignUpForm: React.FC = () => {
         return `${hours}:${minutes.toString().padStart(2, '0')}`;
     };
 
-    // Handle password submission
-    const handlePasswordSubmit = () => {
-        if (password === 'letsbringpoetry') {
-            setIsAuthenticated(true);
-        } else {
-            setErrorMessage('Incorrect password');
-        }
-    };
-
     return (
         <div className="sign-up-form">
-            {!isAuthenticated ? (
-                <div className="password-container">
-                    <h1 className="title">Enter Password</h1>
-                    {errorMessage && <p className="error">{errorMessage}</p>}
-                    <input
-                        type="password"
-                        className="password-input"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter password"
-                    />
-                    <button className="password-button" onClick={handlePasswordSubmit}>
-                        Submit
-                    </button>
+            <h1 className="title">Sign up for Poem Booth rides</h1>
+            {errorMessage && <p className="error">{errorMessage}</p>}
+
+            <label htmlFor="chauffeur-select" className="chauffeur-label">Chauffeur Name:</label>
+            <select id="chauffeur-select" className="chauffeur-dropdown" value={selectedChauffeur} onChange={(e) => setSelectedChauffeur(e.target.value)}>
+                <option value="">Select a Chauffeur</option>
+                {chauffeurs.map((chauffeur) => (
+                    <option key={chauffeur.id} value={chauffeur.id}>
+                        {chauffeur.name}
+                    </option>
+                ))}
+            </select>
+
+            {selectedChauffeur && (
+                <div className="events-container">
+                    {events.map((event) => {
+                        const availabilityForEvent = availability.find(
+                            avail => avail.eventId === event.id && avail.chauffeurId === selectedChauffeur
+                        );
+        
+                        console.log("Matching availability for event:", availabilityForEvent);  // Add this line
+
+                        return (
+                            <div key={event.id} className="event-item">
+                                <h3 className="event-name">{event.name}</h3>
+                                <p className="event-details">Starts at: {format(new Date(event.start), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
+                                <p className="event-details">Stops at: {format(new Date(event.stop), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
+                                <p className="event-details">City: {event.city}</p>
+                                {event.travelTime && <p className="event-details">Travel Time: {formatTravelTime(event.travelTime)}</p>}
+                                <div className="availability-dropdown">
+                                    <select
+                                        value={availabilityForEvent?.status || 'Select Availability'}
+                                        onChange={(e) => updateAvailability(event.id, e.target.value)}
+                                    >
+                                        <option value="Select Availability">Select Availability</option>
+                                        <option value="Available">✅ Available</option>
+                                        <option value="Not Available">🚫 Not Available</option>
+                                        <option value="Maybe Available">💅 Maybe Available</option>
+                                    </select>
+                                </div>
+                                <hr className="event-separator" />
+                            </div>
+                        );
+                    })}
                 </div>
-            ) : (
-                <>
-                    <h1 className="title">Sign up for Poem Booth rides</h1>
-                    {errorMessage && <p className="error">{errorMessage}</p>}
-
-                    <label htmlFor="chauffeur-select" className="chauffeur-label">Chauffeur Name:</label>
-                    <select id="chauffeur-select" className="chauffeur-dropdown" value={selectedChauffeur} onChange={(e) => setSelectedChauffeur(e.target.value)}>
-                        <option value="">Select a Chauffeur</option>
-                        {chauffeurs.map((chauffeur) => (
-                            <option key={chauffeur.id} value={chauffeur.id}>
-                                {chauffeur.name}
-                            </option>
-                        ))}
-                    </select>
-
-                    {selectedChauffeur && (
-                        <div className="events-container">
-                            {events.map((event) => {
-                                const availabilityForEvent = availability.find(
-                                    avail => avail.eventId === event.id && avail.chauffeurId === selectedChauffeur
-                                );
-                
-                                console.log("Matching availability for event:", availabilityForEvent);  // Add this line
-
-                                return (
-                                    <div key={event.id} className="event-item">
-                                        <h3 className="event-name">{event.name}</h3>
-                                        <p className="event-details">Starts at: {format(new Date(event.start), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
-                                        <p className="event-details">Stops at: {format(new Date(event.stop), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
-                                        <p className="event-details">City: {event.city}</p>
-                                        {event.travelTime && <p className="event-details">Travel Time: {formatTravelTime(event.travelTime)}</p>}
-                                        <div className="availability-dropdown">
-                                            <select
-                                                value={availabilityForEvent?.status || 'Select Availability'}
-                                                onChange={(e) => updateAvailability(event.id, e.target.value)}
-                                            >
-                                                <option value="Select Availability">Select Availability</option>
-                                                <option value="Available">✅ Available</option>
-                                                <option value="Not Available">🚫 Not Available</option>
-                                                <option value="Maybe Available">💅 Maybe Available</option>
-                                            </select>
-                                        </div>
-                                        <hr className="event-separator" />
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </>
             )}
 
             <style jsx>{`
@@ -227,20 +195,6 @@ const SignUpForm: React.FC = () => {
                     font-weight: bold;
                     margin-bottom: 20px;
                     text-align: center;
-                }
-                .password-container {
-                    text-align: center;
-                }
-                .password-input {
-                    padding: 10px;
-                    font-size: 16px;
-                    margin-bottom: 10px;
-                    width: 100%;
-                }
-                .password-button {
-                    padding: 10px 20px;
-                    font-size: 16px;
-                    cursor: pointer;
                 }
                 .chauffeur-label {
                     font-weight: bold;
@@ -271,9 +225,6 @@ const SignUpForm: React.FC = () => {
                 .event-separator {
                     border: 1px solid #ccc;
                     margin-top: 20px;
-                }
-                .error {
-                    color: red;
                 }
             `}</style>
         </div>
