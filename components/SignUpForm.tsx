@@ -11,6 +11,7 @@ interface Event {
     stop: string;
     city: string;
     travelTime: string;
+    status: string; // Added status field
 }
 
 interface Chauffeur {
@@ -64,13 +65,14 @@ const SignUpForm: React.FC = () => {
     const fetchEvents = async () => {
         try {
             const response = await axios.get('/api/airtable/events');
-            const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string } }) => ({
+            const eventsData = response.data.map((record: { id: string; fields: { 'Event name': string; 'Starts at': string; 'Stops at': string; 'Location City': string; 'Travel Time': string; Status: string } }) => ({
                 id: record.id,
                 name: record.fields['Event name'],
                 start: record.fields['Starts at'],
                 stop: record.fields['Stops at'],
                 city: record.fields['Location City'],
                 travelTime: record.fields['Travel Time'],
+                status: record.fields['Status'], // Added status field
             }));
             setEvents(eventsData);
         } catch (error) {
@@ -83,11 +85,11 @@ const SignUpForm: React.FC = () => {
     const fetchAllAvailability = async () => {
         try {
             const response = await axios.get('/api/airtable/availability');
-            const availabilityData = response.data.map((record: { id: string; eventId: string; chauffeurId: string; status: string }) => ({
+            const availabilityData = response.data.map((record: { id: string; fields: { Event: string[]; Chauffeurs: string[]; Availability: string } }) => ({
                 id: record.id,
-                eventId: record.eventId,
-                chauffeurId: record.chauffeurId,
-                status: record.status,
+                eventId: record.fields['Event'][0],
+                chauffeurId: record.fields['Chauffeurs'][0],
+                status: record.fields['Availability'],
             }));
             setAvailability(availabilityData);
         } catch (error) {
@@ -161,7 +163,9 @@ const SignUpForm: React.FC = () => {
 
                         return (
                             <div key={event.id} className="event-item">
-                                <h3 className="event-name">{event.name}</h3>
+                                <h3 className="event-name">
+                                    {event.name} {event.status === 'concept' && <span className="event-status">⏳ To be confirmed</span>}
+                                </h3>
                                 <p className="event-details">Starts at: {format(new Date(event.start), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
                                 <p className="event-details">Stops at: {format(new Date(event.stop), "HH:mm 'on' EEEE, do 'of' MMMM")}</p>
                                 <p className="event-details">City: {event.city}</p>
@@ -214,6 +218,9 @@ const SignUpForm: React.FC = () => {
                 .event-name {
                     font-size: 18px;
                     font-weight: bold;
+                }
+                .event-status {
+                    font-weight: normal;
                 }
                 .event-details {
                     margin: 5px 0;
