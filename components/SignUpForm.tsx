@@ -133,22 +133,9 @@ const SignUpForm: React.FC = () => {
 
     // Format travel time
         const formatTravelTime = (travelTime: string | null | undefined) => {
-            // Check if travelTime is a valid string
-            if (!travelTime || typeof travelTime !== 'string') return '';
-
-            // Check if it follows the expected format (HH:mm or H:mm)
-            const timeParts = travelTime.split(':');
-            if (timeParts.length !== 2) return '';
-
-            // Convert hours and minutes to numbers
-            const [hours, minutes] = timeParts.map(Number);
-
-            // Ensure the parsed values are valid numbers
-            if (isNaN(hours) || isNaN(minutes)) return '';
-
-            // Format and return the time as HH:mm
-            return `${hours}:${minutes.toString().padStart(2, '0')}`;
-        };
+            // Check if travelTime is a valid string; otherwise, return an empty string
+            return travelTime ? travelTime : '';
+        };};
 
     return (
         <div className="sign-up-form">
